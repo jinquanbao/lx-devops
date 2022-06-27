@@ -1,0 +1,10 @@
+library 'jenkinsfile-util'
+
+node {
+    def Map map = [:]
+    map.putAll(params)
+    map.put('GIT_CREDENTIAL_ID',"git_credential_id")
+    map.put('APP_NAME',"java-deploy-test")
+    map.put('JAVA_OPS',"-Xmx512m -Xms128m")
+    jenkisfileUtil(map)
+}

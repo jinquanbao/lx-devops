@@ -1,0 +1,16 @@
+FROM openjdk:8-jdk
+
+MAINTAINER chenjq@mail.com
+
+ENV JAVA_OPS="-Duser.timezone=GMT+8 \
+ -Xmx512m \
+ -Xms128m"
+
+ENV PARAMS="--server.port=8080 "
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
+
+COPY  build/libs/*.jar /app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["/bin/sh","-c","java ${JAVA_OPS} -Dfile.encoding=utf8 -Djava.security.egd=file:/dev/./urandom -jar app.jar ${PARAMS}"]

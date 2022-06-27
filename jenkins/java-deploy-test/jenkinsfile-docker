@@ -1,0 +1,82 @@
+pipeline {
+
+   agent any
+
+    parameters {
+        string(name:'TAG_NAME',defaultValue: 'master',description:'')
+        string(name:'GIT_URL',defaultValue: '',description:'')
+    }
+
+    environment {
+        GIT_CREDENTIAL_ID = 'git_credential_id'
+        REGISTRY_CREDENTIAL_ID = 'dockerhub-id'
+        REGISTRY_ADDRESS = 'docker.io'
+        REGISTRY_NAMESPACE = 'jinquanbao'
+        APP_NAME = 'java-deploy-test'
+    }
+
+    stages {
+        stage ('checkout scm') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: "*/${TAG_NAME}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
+					  userRemoteConfigs: [[credentialsId: GIT_CREDENTIAL_ID , url: "${GIT_URL}"]]])
+            }
+        }
+
+
+		stage ('build') {
+			steps {
+					dir("$APP_NAME"){
+
+						sh 'chmod +x ./gradlew; ./gradlew  clean bootJar'
+						sh 'docker build -f dockerfile -t $REGISTRY_ADDRESS/$REGISTRY_NAMESPACE/$APP_NAME:$TAG_NAME-$BUILD_NUMBER .'
+
+					}
+
+			}
+		}
+
+		stage ('push image') {
+			steps {
+				withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,credentialsId : "$REGISTRY_CREDENTIAL_ID" ,)]) {
+                    sh 'echo "$DOCKER_PASSWORD" | docker login $REGISTRY_ADDRESS -u "$DOCKER_USERNAME" --password-stdin'
+                    sh 'docker push  $REGISTRY_ADDRESS/$REGISTRY_NAMESPACE/$APP_NAME:$TAG_NAME-$BUILD_NUMBER'
+                }
+			}
+		}
+
+		stage('deploy') {
+		  steps {
+			withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,credentialsId : "$REGISTRY_CREDENTIAL_ID" ,)]) {
+                    sh 'echo "$DOCKER_PASSWORD" | docker login $REGISTRY_ADDRESS -u "$DOCKER_USERNAME" --password-stdin'
+                    sh 'docker pull  $REGISTRY_ADDRESS/$REGISTRY_NAMESPACE/$APP_NAME:$TAG_NAME-$BUILD_NUMBER'
+                    //sh 'docker rm \$(docker stop ${APP_NAME})'
+                    sh 'docker run -d --name ${APP_NAME} $REGISTRY_ADDRESS/$REGISTRY_NAMESPACE/$APP_NAME:$TAG_NAME-$BUILD_NUMBER'
+            }
+
+		  }
+		}
+
+
+
+    }
+
+    post {
+        always {
+            echo 'This will always run'
+        }
+        success {
+            echo 'This will run only if successful'
+        }
+        failure {
+            echo 'This will run only if failed'
+        }
+        unstable {
+            echo 'This will run only if the run was marked as unstable'
+        }
+        changed {
+            echo 'This will run only if the state of the Pipeline has changed'
+            echo 'For example, if the Pipeline was previously failing but is now successful'
+        }
+     }
+}

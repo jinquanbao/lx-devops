@@ -1,0 +1,16 @@
+server:
+  port: ${SERVER_PORT:7000}
+spring:
+  application:
+    name: java-deploy-test
+#  datasource:
+#    druid:
+#      type: com.alibaba.druid.pool.DruidDataSource
+#      url: ${SPRING_DATASOURCE_URL:jdbc:mysql://www.laoxin.com:3306/poseidon?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=true}
+#      username: ${SPRING_DATASOURCE_USERNAME:root}
+#      password: ${SPRING_DATASOURCE_PASSWORD:root}
+#      initial-size: 1
+#      min-idle: 2
+#      max-active: 5
+#      max-wait: 60000
+#      validation-query: SELECT 1 FROM DUAL

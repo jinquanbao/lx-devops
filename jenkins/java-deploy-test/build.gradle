@@ -1,0 +1,47 @@
+description = 'java-deploy-test'
+version APP_VERSION
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('http://maven.aliyun.com/nexus/content/groups/public')
+    }
+    maven {
+        url "https://repo.spring.io/release"
+    }
+    mavenCentral()
+
+}
+
+buildscript {
+    repositories {
+        // Use the plugin portal to apply community plugins in convention plugins.
+        gradlePluginPortal()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    ext {
+        springBootVersion = '2.4.13'
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+
+}
+
+dependencies {
+    //compile group: 'com.alibaba', name: 'druid-spring-boot-starter', version: '1.2.8'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
+    //compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
+    runtime 'mysql:mysql-connector-java:8.0.21'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
+}
